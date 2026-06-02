@@ -1,3 +1,4 @@
+
 # app/apis/practice_apis.py
 
 from fastapi import APIRouter, HTTPException
@@ -38,3 +39,20 @@ def delete_user(user_id: int):
     
     # 리스트를 다 돌았는데도 해당 id가 없으면 404 에러 반환
     raise HTTPException(status_code=404, detail="User not found")
+
+
+@router.get("/users")
+def get_users():
+    users = []
+
+    for user in user_list:
+        users.append(
+            {
+                "id": user["id"],
+                "name": user["name"],
+                "age": user["age"],
+                "email": user["email"]
+            }
+        )
+
+    return users
