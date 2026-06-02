@@ -3,6 +3,11 @@
 
 from fastapi import APIRouter, HTTPException
 
+router = APIRouter(
+    prefix="/practice_api",
+    tags=["practice_api"]
+)
+
 user_list = [
 	{
 		"id": 1,
@@ -27,9 +32,8 @@ user_list = [
 	}
 ]
 
-# 회원정보 삭제 API 라우터 생성
-router = APIRouter()
-@router.delete("/{user_id}")
+# 회원정보 삭제 API 
+@router.delete("/users/{user_id}")
 def delete_user(user_id: int):
     # user_list에서 해당 user_id를 가진 회원을 검색
     for user in user_list:
@@ -40,7 +44,7 @@ def delete_user(user_id: int):
     # 리스트를 다 돌았는데도 해당 id가 없으면 404 에러 반환
     raise HTTPException(status_code=404, detail="User not found")
 
-
+# 전체 회원 목록 조회 API
 @router.get("/users")
 def get_users():
     users = []
@@ -56,3 +60,17 @@ def get_users():
         )
 
     return users
+
+# ⭐️ 특정 회원 조회 API
+@router.get("/users/{user_id}")
+def get_user(user_id: int):
+    for user in user_list:
+        if user["id"] == user_id:
+            return {
+                "id": user["id"],
+                "name": user["name"],
+                "age": user["age"],
+                "email": user["email"]
+            }
+
+    raise HTTPException(status_code=404, detail="User not found")
