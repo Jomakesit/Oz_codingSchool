@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter(
     prefix="/practice_api",
@@ -45,3 +45,17 @@ def get_users():
         )
 
     return users
+
+# ⭐️
+@router.get("/users/{user_id}")
+def get_user(user_id: int):
+    for user in user_list:
+        if user["id"] == user_id:
+            return {
+                "id": user["id"],
+                "name": user["name"],
+                "age": user["age"],
+                "email": user["email"]
+            }
+
+    raise HTTPException(status_code=404, detail="User not found")
