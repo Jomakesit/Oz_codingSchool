@@ -5,6 +5,9 @@ from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
 from starlette.responses import FileResponse
 
+from AH_web_development_assignment.app.apis.practice_apis import router as practice_router
+
+
 app = FastAPI()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,6 +23,10 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 # 'media' 폴더를 '/media' 경로로 마운트 (사용자 업로드 파일 서빙용)
 app.mount("/media", StaticFiles(directory=BASE_DIR / "media"), name="media")
 
+
+#  회원 삭제 API 라우터 등록
+# catch_all 예외 처리에 맞게 프리픽스를 /api/v1/users로 지정했습니다.
+app.include_router(practice_router, prefix="/api/v1/users")
 
 @app.get(path="/healthcheck", status_code=200, include_in_schema=False)
 async def healthcheck():
