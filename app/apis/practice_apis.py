@@ -1,7 +1,7 @@
 
 # app/apis/practice_apis.py
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body, status
 
 user_list = [
 	{
@@ -56,3 +56,47 @@ def get_users():
         )
 
     return users
+
+# =======================================================================
+# ✨ [3번 API] 회원 정보를 Request Body로 입력받아 추가
+# =======================================================================
+@router.post("/users", status_code=status.HTTP_201_CREATED)
+def create_user(
+    name: str = Body(..., min_length=2, max_length=10), # 이름 최소 2글자, 최대 10글자
+    age: int = Body(..., ge=14),                       # 나이 최소 14세 이상
+    email: str = Body(...),
+    password: str = Body(...)
+):
+    # 1. 이메일 형식 검증 (최대 30자 및 정규표현식)
+    if len(email) > 30:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="이메일은 최대 30자까지 가능합니다.")
+    
+    email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    if not re.match(email_pattern, email):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="올바른 이메일 형식이 아닙니다.")
+        
+    # 2. 이메일 중복 불가능 검증
+    for u in user_list:
+        if u["email"] == email:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="이미 존재하는 이메일입니다.")
+            
+    # 3. 비밀번호 검증 (대소문자, 특수문자 각 1개 필수, 최소 8자~최대 20자)
+    password_pattern = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,20}$"
+    if not re.match(password_pattern, password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="비밀번호는 대소문자, 특수문자가 각 1개씩 필수이며 8자 이상 20자 이하여야 합니다."
+        )
+    
+    # 4. 입력값이 모두 올바르면 user_list에 추가 (id는 자동으로 1씩 증가)
+    next_id = max([u["id"] for u in user_list]) + 1 if user_list else 1
+    new_user = {
+        "id": next_id,
+        "name": name,
+        "age": age,
+        "email": email,
+        "password": password
+    }
+    user_list.append(new_user)
+    
+    return {"message": "회원이 성공적으로 추가되었습니다.", "user_id": next_id}
