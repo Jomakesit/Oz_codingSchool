@@ -43,7 +43,7 @@ def delete_user(user_id: int):
     raise HTTPException(status_code=404, detail="User not found")
 
 
-# [1번 API] 전체 회원 목록 조회 API
+# [1번 API] 모든 회원의 정보를 목록으로 조회하는 API
 @router.get("/users")
 def get_users():
     users = []
@@ -59,7 +59,7 @@ def get_users():
     return users
 
 
-# ⭐️ 특정 회원 조회 API
+# [2번 API] 회원 id를 path parameter로 입력받아 해당 회원의 정보를 조회하는 API
 @router.get("/users/{user_id}")
 def get_user(user_id: int):
     for user in user_list:
@@ -73,9 +73,8 @@ def get_user(user_id: int):
     raise HTTPException(status_code=404, detail="User not found")
 
 
-# =======================================================================
-# ✨ 3번 회원 정보를 Request Body로 입력받아 추가 API
-# =======================================================================
+
+# [3번 API] 회원 정보를 Request Body로 입력받아 추가 API
 @router.post("/users", status_code=status.HTTP_201_CREATED)
 def create_user(
     name: str = Body(..., min_length=2, max_length=10), # 이름 최소 2글자, 최대 10글자
@@ -116,3 +115,67 @@ def create_user(
     user_list.append(new_user)
     
     return {"message": "회원이 성공적으로 추가되었습니다.", "user_id": next_id}
+
+
+# [4번 API] 회원정보 수정 API
+@router.patch("/users/{user_id}")
+def update_user(
+    user_id: int,
+    age: int | None = Body(None, ge=14),
+    email: str | None = Body(None),
+    password: str | None = Body(None)
+):
+    # age, email, password 중 아무 값도 입력되지 않은 경우 400 에러 반환
+    if age is None and email is None and password is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="수정할 항목을 최소 1개 이상 입력해야 합니다."
+        )
+
+    # user_list에서 해당 user_id를 가진 회원을 검색
+    for user in user_list:
+        if user["id"] == user_id:
+            # age가 입력된 경우 나이 수정
+            if age is not None:
+                user["age"] = age
+
+            # email이 입력된 경우 이메일 검증 후 수정
+            if email is not None:
+                if len(email) > 30:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="이메일은 최대 30자까지 가능합니다."
+                    )
+
+                email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                if not re.match(email_pattern, email):
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="올바른 이메일 형식이 아닙니다."
+                    )
+
+                user["email"] = email
+
+            # password가 입력된 경우 비밀번호 검증 후 수정
+            if password is not None:
+                password_pattern = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,20}$"
+                if not re.match(password_pattern, password):
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="비밀번호는 대소문자, 특수문자가 각 1개씩 필수이며 8자 이상 20자 이하여야 합니다."
+                    )
+
+                user["password"] = password
+
+            return {
+                "message": "회원 정보가 성공적으로 수정되었습니다.",
+                "user": {
+                    "id": user["id"],
+                    "name": user["name"],
+                    "age": user["age"],
+                    "email": user["email"]
+                }
+            }
+
+    # user_list를 다 돌았는데도 해당 id가 없으면 404 에러 반환
+    raise HTTPException(status_code=404, detail="User not found")
