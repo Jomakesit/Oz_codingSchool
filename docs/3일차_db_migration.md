@@ -335,8 +335,10 @@ ai_analysis_results
 
 이번 작업에서는 제공 ERD를 기준으로 구현하되, 실제 DB 제약 조건상 실행이 불가능한 `xray_images.uploader_id` 부분은 `Integer`, `nullable=True`로 조정하였다. 이 조정은 `users.id`와의 FK 타입 정합성을 맞추고, `ON DELETE SET NULL` 정책을 실제 DB에서 적용하기 위한 것이다.
 
-```
-```
-
 
 ## DB Viewer 확인 이미지
+MySQL Workbench에서 `ai_health` 데이터베이스에 schema가 적용된 결과를 확인
+
+![DB schema 적용 확인](./db_schema_tables.png)
+
+`users`, `patients`, `medical_records`, `xray_images`, `ai_analysis_results`, `alembic_version` 테이블이 생성된 것을 확인
