@@ -340,3 +340,4 @@ ai_analysis_results
 
 
 ## DB Viewer 확인 이미지
+![DB schema 적용 확인](./db_schema_tables.png)
