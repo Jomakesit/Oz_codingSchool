@@ -21,7 +21,7 @@ async function login(email, password) {
             localStorage.setItem('token', state.token);
             localStorage.setItem('isLoggedIn', 'true');
             await checkAuth();
-            
+
             if (state.user && state.user.role === 'pending') {
                 navigate('/');
             } else {
@@ -78,9 +78,9 @@ async function checkAuth() {
             return;
         }
     }
-    
+
     if (!state.token) return;
-    
+
     try {
         state.user = await apis.getMe();
         updateNav();
@@ -92,16 +92,16 @@ async function checkAuth() {
 function updateNav() {
     const authLink = document.getElementById('auth-link');
     const adminLinkContainer = document.getElementById('admin-link-container');
-    
+
     if (state.user) {
         document.body.classList.add('logged-in');
-        
+
         if (state.user.role === 'admin') {
             adminLinkContainer.innerHTML = `<li><a href="/admin/users" onclick="route(event)" class="nav-btn">회원 관리</a></li>`;
         } else {
             adminLinkContainer.innerHTML = '';
         }
-        
+
         authLink.innerHTML = `
             <span class="user-info" onclick="navigate('/my-page')" style="cursor: pointer;">${state.user.name}(${state.user.department})</span>
             <a href="#" onclick="logout(event)" class="nav-btn logout-btn">로그아웃</a>
@@ -123,18 +123,18 @@ async function navigate(path, pushState = true) {
     if (pushState) {
         window.history.pushState({}, "", path);
     }
-    
+
     const url = new URL(window.location.origin + path);
     const pathname = url.pathname;
     const searchParams = Object.fromEntries(url.searchParams);
-    
+
     state.currentPage = pathname;
     const app = document.getElementById('app');
     app.innerHTML = '<div class="card">로딩 중...</div>';
 
     try {
         // 권한 체크
-        const publicPaths = ['/', '/home', '/login', '/signup'];
+        const publicPaths = ['/', '/home', '/login', '/signup', '/patients/create'];
         if (!state.user && !publicPaths.includes(pathname)) {
             await navigate('/login');
             return;
