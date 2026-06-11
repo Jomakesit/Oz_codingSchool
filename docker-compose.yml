@@ -7,16 +7,19 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app
-      - static_volume:/app/static
-      - media_volume:/app/media
+      - ./app:/code/app       # 로컬 app/ → 컨테이너 /code/app (--reload 감지용)
+      - static_volume:/code/static
+      - media_volume:/code/media
+    env_file:
+      - .env
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/healthcheck || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 3
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
   mysql:
     image: mysql:8.0
@@ -27,14 +30,12 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_PORT: ${DB_PORT}
     ports:
-      - "${DB_PORT}:3306"
+      - "3307:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 5
-
 
 volumes:
   mysql_volume:
