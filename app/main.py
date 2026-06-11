@@ -1,16 +1,33 @@
-import os 
+import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI 
-from starlette.staticfiles import StaticFiles 
+from fastapi import FastAPI
 from starlette.responses import FileResponse
+from starlette.staticfiles import StaticFiles
 
-# ⭐️ 
-from app.apis import practice_apis
+from app.core.config import settings
+from app.core.db.databases import Base, async_engine
 
-app = FastAPI() 
-# ⭐️ 
+# ⭐️
+from app.apis import auth_apis, practice_apis, user_apis
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if settings.USE_SQLITE:
+        # SQLite 모드에서는 서버 시작 시 테이블 자동 생성
+        import app.models  # noqa: F401 — 모든 모델을 Base에 등록
+        async with async_engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+# ⭐️
 app.include_router(practice_apis.router)
+app.include_router(user_apis.router)
+app.include_router(auth_apis.router)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
