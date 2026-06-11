@@ -26,14 +26,14 @@ const apis = {
 
         try {
             const response = await fetch(`${API_BASE}${url}`, { ...options, headers });
-            
+
             // 401 Unauthorized 처리 (토큰 만료 시 리프레시 시도)
             if (response.status === 401) {
                 // 로그인 요청에서 401은 리프레시 대상이 아님
                 if (url === '/users/login') {
                     return { status: 401 };
                 }
-                
+
                 // 토큰이 없는 경우 리프레시 시도 없이 로그아웃
                 if (!state.token) {
                     await logout();
@@ -61,10 +61,10 @@ const apis = {
                         const data = await refreshResponse.json();
                         state.token = data.access_token;
                         localStorage.setItem('token', state.token);
-                        
+
                         this.isRefreshing = false;
                         this.onTokenRefreshed(state.token);
-                        
+
                         // 원래 요청 재시도
                         headers['Authorization'] = `Bearer ${state.token}`;
                         return await this.request(url, options, skipAlert);
@@ -80,7 +80,7 @@ const apis = {
                     return null;
                 }
             }
-            
+
             if (!response.ok) {
                 let error;
                 try {
@@ -88,7 +88,7 @@ const apis = {
                 } catch (e) {
                     error = { detail: '서버 응답 처리 중 오류가 발생했습니다.' };
                 }
-                
+
                 let msg = error.detail || '요청 중 오류가 발생했습니다.';
                 if (Array.isArray(msg)) {
                     msg = msg.map(e => {
@@ -215,7 +215,7 @@ const apis = {
      * [REQ-PTNT-001] 사내 의료인 역할을 가진 유저만 환자를 신규 등록할 수 있다.
      */
     async createPatient(patientData) {
-        return await this.request('/patients', {
+        return await this.request('/patients/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(patientData)
