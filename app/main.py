@@ -7,7 +7,8 @@ from starlette.responses import FileResponse
 from starlette.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.core.db.databases import Base, async_engine
+# from app.core.db.databases import Base, async_engine
+from app.apis import auth_apis, patient_apis, practice_apis, user_apis
 
 # ⭐️
 from app.apis import auth_apis, practice_apis, user_apis
@@ -28,6 +29,8 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(practice_apis.router)
 app.include_router(user_apis.router)
 app.include_router(auth_apis.router)
+#
+app.include_router(patient_apis.router)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
