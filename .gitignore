@@ -21,3 +21,4 @@ envs/
 .env
 
 .python-version
+dev_test.db
