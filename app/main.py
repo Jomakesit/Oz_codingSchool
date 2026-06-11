@@ -11,7 +11,7 @@ from app.core.config import settings
 from app.apis import auth_apis, patient_apis, practice_apis, user_apis
 
 # ⭐️
-from app.apis import auth_apis, practice_apis, user_apis
+from app.apis import ai_apis, auth_apis, patient_apis, practice_apis, user_apis
 
 
 @asynccontextmanager
@@ -30,7 +30,7 @@ app.include_router(practice_apis.router)
 app.include_router(user_apis.router)
 app.include_router(auth_apis.router)
 #
-app.include_router(patient_apis.router)
+app.include_router(ai_apis.router)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
