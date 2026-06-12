@@ -1,4 +1,4 @@
-services:
+﻿services:
   fastapi:
     build:
       context: .
@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/code/app       # 로컬 app/ → 컨테이너 /code/app (--reload 감지용)
+      - ./app:/code/app
       - static_volume:/code/static
       - media_volume:/code/media
     env_file:
@@ -19,6 +19,8 @@ services:
       retries: 3
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   mysql:
@@ -37,7 +39,34 @@ services:
       timeout: 20s
       retries: 5
 
+  redis:
+    image: redis:7.2
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_volume:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  ai-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: always
+
 volumes:
   mysql_volume:
   static_volume:
   media_volume:
+  redis_volume:
